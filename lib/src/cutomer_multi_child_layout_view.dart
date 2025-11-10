@@ -567,22 +567,21 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowRow(itemSize, columnH, columnLastH);
         if (insertIndex == -1) {
-          offsetX = 0;
+          offsetX = spacing;
           nowRowIndex = 0;
         } else {
-          offsetX = insertIndex * itemCellWidth +
-              (insertIndex >= 1 ? insertIndex : 0) * spacing;
+          offsetX = spacing + insertIndex * (itemCellWidth + spacing);
           nowRowIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemAll[i].id,
-          Offset(offsetX + spacing * 0.5, columnH[nowRowIndex])));
+          Offset(offsetX, columnH[nowRowIndex] + spacing)));
 
       // 修改x轴偏移量
-      offsetX += spacing +
-          itemCellWidth * (itemAll[i].crossAxisCellCount ?? 1) +
-          ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
+      offsetX += itemCellWidth * (itemAll[i].crossAxisCellCount ?? 1) +
+          ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing +
+          spacing;
 
       // 放置后修改当前行的index指向
       for (var c = 0; c < itemAll[i].crossAxisCellCount!; c++) {
@@ -704,22 +703,21 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowRow(itemSize, columnH, columnLastH);
         if (insertIndex == -1) {
-          offsetX = 0;
+          offsetX = spacing;
           nowRowIndex = 0;
         } else {
-          offsetX = insertIndex * itemCellWidth +
-              (insertIndex >= 1 ? insertIndex : 0) * spacing;
+          offsetX = spacing + insertIndex * (itemCellWidth + spacing);
           nowRowIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemChangeAll[i].id,
-          Offset(offsetX + spacing * 0.5, columnH[nowRowIndex])));
+          Offset(offsetX, columnH[nowRowIndex] + spacing)));
 
       // 修改x轴偏移量
-      offsetX += spacing +
-          itemCellWidth * (itemChangeAll[i].crossAxisCellCount ?? 1) +
-          ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
+      offsetX += itemCellWidth * (itemChangeAll[i].crossAxisCellCount ?? 1) +
+          ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing +
+          spacing;
 
       // 放置后修改当前行的index指向
       for (var c = 0; c < itemChangeAll[i].crossAxisCellCount!; c++) {
@@ -890,22 +888,21 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
-          offsetY = 0;
+          offsetY = spacing;
           nowColumIndex = 0;
         } else {
-          offsetY = insertIndex * itemCellHeight +
-              (insertIndex >= 1 ? insertIndex : 0) * spacing;
+          offsetY = spacing + insertIndex * (itemCellHeight + spacing);
           nowColumIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(
-          itemAll[i].id, Offset(rowW[nowColumIndex], offsetY + spacing * 0.5)));
+          itemAll[i].id, Offset(rowW[nowColumIndex] + spacing, offsetY)));
 
       // 修改y轴偏移量
-      offsetY += spacing +
-          itemCellHeight * (itemAll[i].crossAxisCellCount ?? 1) +
-          ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
+      offsetY += itemCellHeight * (itemAll[i].crossAxisCellCount ?? 1) +
+          ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing +
+          spacing;
 
       // 放置后修改当前行的index指向
       for (var c = 0; c < itemAll[i].mainAxisCellCount!; c++) {
@@ -996,22 +993,21 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
-          offsetY = 0;
+          offsetY = spacing;
           nowColumIndex = 0;
         } else {
-          offsetY = insertIndex * itemCellHeight +
-              (insertIndex >= 1 ? insertIndex : 0) * spacing;
+          offsetY = spacing + insertIndex * (itemCellHeight + spacing);
           nowColumIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemChangeAll[i].id,
-          Offset(rowW[nowColumIndex], offsetY + spacing * 0.5)));
+          Offset(rowW[nowColumIndex] + spacing, offsetY)));
 
       // 修改y轴偏移量
-      offsetY += spacing +
-          itemCellHeight * (itemChangeAll[i].crossAxisCellCount ?? 1) +
-          ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
+      offsetY += itemCellHeight * (itemChangeAll[i].crossAxisCellCount ?? 1) +
+          ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing +
+          spacing;
 
       // 放置后修改当前行的index指向
       for (var c = 0; c < itemChangeAll[i].mainAxisCellCount!; c++) {
