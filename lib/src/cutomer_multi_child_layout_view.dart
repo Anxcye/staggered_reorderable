@@ -326,11 +326,17 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                 childWhenDragging: null,
                 feedback: Material(
                   color: Colors.transparent,
-                  child: SizedBox(
-                    width: itemAll[index].crossAxisCellCount! * itemCellWidth,
-                    height: itemAll[index].mainAxisCellCount! * itemCellHeight,
-                    child: Center(
-                      child: itemAll[index].feedback ?? itemAll[index].child,
+                  child: Transform.scale(
+                    scale: 0.9,
+                    child: Opacity(
+                      opacity: 0.8,
+                      child: SizedBox(
+                        width: itemAll[index].crossAxisCellCount! * itemCellWidth,
+                        height: itemAll[index].mainAxisCellCount! * itemCellHeight,
+                        child: Center(
+                          child: itemAll[index].feedback ?? itemAll[index].child,
+                        ),
+                      ),
                     ),
                   ),
                 ),
