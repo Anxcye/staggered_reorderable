@@ -21,6 +21,7 @@ class CustomerMultiChildView extends StatefulWidget {
   final double forwardRedundancy;
   final double backwardRedundancy;
   final double scrollStep;
+  final double? fixedCellHeight;
   final Function(List<int>)? onReorder;
   const CustomerMultiChildView(
     this.children,
@@ -35,6 +36,7 @@ class CustomerMultiChildView extends StatefulWidget {
     Key? key,
     this.collation = false,
     this.scrollDirection = Axis.vertical,
+    this.fixedCellHeight,
     this.onReorder,
   }) : super(key: key);
 
@@ -72,8 +74,11 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
 
   Timer? _timer;
 
-  /// 单元格大小
-  double itemCell = 0.0;
+  /// 单元格宽度
+  double itemCellWidth = 0.0;
+  
+  /// 单元格高度
+  double itemCellHeight = 0.0;
 
   @override
   void initState() {
@@ -285,8 +290,8 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                 child: DragTarget(
                   builder: (context, candidateData, rejectedData) {
                     return SizedBox(
-                      width: itemAll[index].crossAxisCellCount! * itemCell,
-                      height: itemAll[index].mainAxisCellCount! * itemCell,
+                      width: itemAll[index].crossAxisCellCount! * itemCellWidth,
+                      height: itemAll[index].mainAxisCellCount! * itemCellHeight,
                       child: Center(
                           child: dragItem == itemAll[index].trackingNumber
                               ? itemAll[index].placeholder ??
@@ -322,8 +327,8 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                 feedback: Material(
                   color: Colors.transparent,
                   child: SizedBox(
-                    width: itemAll[index].crossAxisCellCount! * itemCell,
-                    height: itemAll[index].mainAxisCellCount! * itemCell,
+                    width: itemAll[index].crossAxisCellCount! * itemCellWidth,
+                    height: itemAll[index].mainAxisCellCount! * itemCellHeight,
                     child: Center(
                       child: itemAll[index].feedback ?? itemAll[index].child,
                     ),
@@ -351,8 +356,8 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                 },
               )
             : SizedBox(
-                width: itemAll[index].crossAxisCellCount! * itemCell,
-                height: itemAll[index].mainAxisCellCount! * itemCell,
+                width: itemAll[index].crossAxisCellCount! * itemCellWidth,
+                height: itemAll[index].mainAxisCellCount! * itemCellHeight,
                 child: Center(child: itemAll[index].child),
               ));
   }
@@ -375,13 +380,17 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
         if (widget.scrollDirection == Axis.vertical) {
           _maxScrollWidth = constraints.maxWidth;
           var width = constraints.maxWidth;
-          itemCell = (width - (widget.columnNum + 1) * widget.spacing) /
+          itemCellWidth = (width - (widget.columnNum + 1) * widget.spacing) /
               widget.columnNum;
+          // 如果设置了固定高度，使用固定高度，否则使用宽度（正方形）
+          itemCellHeight = widget.fixedCellHeight ?? itemCellWidth;
         } else {
           _maxScrollHeight = constraints.maxHeight;
-          itemCell =
+          itemCellHeight =
               (_maxScrollHeight - (widget.columnNum + 1) * widget.spacing) /
                   widget.columnNum;
+          // 水平滚动时保持正方形
+          itemCellWidth = itemCellHeight;
         }
         return SingleChildScrollView(
           key: _globalKey,
@@ -398,7 +407,8 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                       process,
                       widget.columnNum,
                       widget.spacing,
-                      itemCell, callback: (value) {
+                      itemCellWidth,
+                      itemCellHeight, callback: (value) {
                       if (value == _maxScrollHeight) return;
 
                       /// 需要强行刷新一下，防止滑动区域有问题
@@ -414,7 +424,8 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
                       process,
                       widget.columnNum,
                       widget.spacing,
-                      itemCell, callback: (value) {
+                      itemCellWidth,
+                      itemCellHeight, callback: (value) {
                       /// 需要强行刷新一下，防止滑动区域有问题
                       WidgetsBinding.instance.addPostFrameCallback((_) {
                         setState(() {
@@ -438,11 +449,12 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
   final double process;
   final int columnNum;
   final double spacing;
-  final double itemCell;
+  final double itemCellWidth;
+  final double itemCellHeight;
   final Function(double value)? callback;
 
   ProxyVerticalClass(this.itemAll, this.itemChangeAll, this.process,
-      this.columnNum, this.spacing, this.itemCell,
+      this.columnNum, this.spacing, this.itemCellWidth, this.itemCellHeight,
       {this.callback}) {
     // 累计每列的高度
     columnH = List.generate(columnNum, (index) {
@@ -471,14 +483,14 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
 
     // 判断本行是否都已经按行放满
     for (var indexX = 0; indexX < columnH.length; indexX++) {
-      if (columnH[indexX] - columnLastH[indexX] < itemCell) {
+      if (columnH[indexX] - columnLastH[indexX] < itemCellHeight) {
         // 判断当前点是否符合长度
-        int length = size.width ~/ itemCell;
+        int length = size.width ~/ itemCellWidth;
         if (columnH.length - indexX >= length) {
           insertIndex = indexX;
           for (var indexY = 0; indexY < length; indexY++) {
             if (columnH[indexY + indexX] - columnLastH[indexY + indexX] <
-                itemCell) {
+                itemCellHeight) {
             } else if (maxHeight - columnH[indexY + indexX] < size.height) {
               insertIndex = -1;
               break;
@@ -494,12 +506,12 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       // print("$indexX: $maxHeight - ${columnH[indexX]} >= ${size.height}");
       if (maxHeight - columnH[indexX] >= size.height) {
         // 判断当前点是否符合长度
-        int length = size.width ~/ itemCell;
+        int length = size.width ~/ itemCellWidth;
         if (columnH.length - indexX >= length) {
           insertIndex = indexX;
           for (var indexY = 0; indexY < length; indexY++) {
             if (columnH[indexY + indexX] - columnLastH[indexY + indexX] <
-                itemCell) {
+                itemCellHeight) {
             } else if (maxHeight - columnH[indexY + indexX] < size.height) {
               insertIndex = -1;
               break;
@@ -543,13 +555,13 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       Size itemSize = layoutChild(
           itemAll[i].id,
           BoxConstraints(
-              minWidth: itemCell * (itemAll[i].crossAxisCellCount!) +
+              minWidth: itemCellWidth * (itemAll[i].crossAxisCellCount!) +
                   ((itemAll[i].crossAxisCellCount!) - 1) * spacing,
-              maxWidth: itemCell * (itemAll[i].crossAxisCellCount!) +
+              maxWidth: itemCellWidth * (itemAll[i].crossAxisCellCount!) +
                   ((itemAll[i].crossAxisCellCount!) - 1) * spacing,
-              minHeight: itemCell * (itemAll[i].mainAxisCellCount!) +
+              minHeight: itemCellHeight * (itemAll[i].mainAxisCellCount!) +
                   ((itemAll[i].mainAxisCellCount!) - 1) * spacing,
-              maxHeight: itemCell * (itemAll[i].mainAxisCellCount!) +
+              maxHeight: itemCellHeight * (itemAll[i].mainAxisCellCount!) +
                   ((itemAll[i].mainAxisCellCount!) - 1) * spacing));
 
       if (true) {
@@ -558,7 +570,7 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
           offsetX = 0;
           nowRowIndex = 0;
         } else {
-          offsetX = insertIndex * itemCell +
+          offsetX = insertIndex * itemCellWidth +
               (insertIndex >= 1 ? insertIndex : 0) * spacing;
           nowRowIndex = insertIndex;
         }
@@ -569,7 +581,7 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
 
       // 修改x轴偏移量
       offsetX += spacing +
-          itemCell * (itemAll[i].crossAxisCellCount ?? 1) +
+          itemCellWidth * (itemAll[i].crossAxisCellCount ?? 1) +
           ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
 
       // 放置后修改当前行的index指向
@@ -679,13 +691,13 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
     for (int i = 0; i < itemChangeAll.length; i++) {
       // 获取当前widget宽高限制
       Size itemSize = getSize(BoxConstraints(
-          minWidth: itemCell * (itemChangeAll[i].crossAxisCellCount!) +
+          minWidth: itemCellWidth * (itemChangeAll[i].crossAxisCellCount!) +
               ((itemChangeAll[i].crossAxisCellCount!) - 1) * spacing,
-          maxWidth: itemCell * (itemChangeAll[i].crossAxisCellCount!) +
+          maxWidth: itemCellWidth * (itemChangeAll[i].crossAxisCellCount!) +
               ((itemChangeAll[i].crossAxisCellCount!) - 1) * spacing,
-          minHeight: itemCell * (itemChangeAll[i].mainAxisCellCount!) +
+          minHeight: itemCellHeight * (itemChangeAll[i].mainAxisCellCount!) +
               ((itemChangeAll[i].mainAxisCellCount!) - 1) * spacing,
-          maxHeight: itemCell * (itemChangeAll[i].mainAxisCellCount!) +
+          maxHeight: itemCellHeight * (itemChangeAll[i].mainAxisCellCount!) +
               ((itemChangeAll[i].mainAxisCellCount!) - 1) * spacing));
 
       // 当前widget横向排布后越界处理
@@ -695,7 +707,7 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
           offsetX = 0;
           nowRowIndex = 0;
         } else {
-          offsetX = insertIndex * itemCell +
+          offsetX = insertIndex * itemCellWidth +
               (insertIndex >= 1 ? insertIndex : 0) * spacing;
           nowRowIndex = insertIndex;
         }
@@ -706,7 +718,7 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
 
       // 修改x轴偏移量
       offsetX += spacing +
-          itemCell * (itemChangeAll[i].crossAxisCellCount ?? 1) +
+          itemCellWidth * (itemChangeAll[i].crossAxisCellCount ?? 1) +
           ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
 
       // 放置后修改当前行的index指向
@@ -729,11 +741,12 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
   final double process;
   final int columnNum;
   final double spacing;
-  final double itemCell;
+  final double itemCellWidth;
+  final double itemCellHeight;
   final Function(double value)? callback;
 
   ProxyHorizontalClass(this.itemAll, this.itemChangeAll, this.process,
-      this.columnNum, this.spacing, this.itemCell,
+      this.columnNum, this.spacing, this.itemCellWidth, this.itemCellHeight,
       {this.callback}) {
     // 累计每行的宽度
     rowW = List.generate(columnNum, (index) {
@@ -767,7 +780,7 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
   /// 判断当前列是否可以存放此widget,
   /// 查到后返回index > 0
   /// 未查到返回index = -1
-  int checkNowColumn(Size size, double itemCell, List rowW, List rowLastW) {
+  int checkNowColumn(Size size, List rowW, List rowLastW) {
     int insertIndex = -1;
     // 找到最大值
     double maxWidth = rowW.fold(
@@ -777,13 +790,13 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
 
     // 判断本列是否都已经按列放满
     for (var indexY = 0; indexY < rowW.length; indexY++) {
-      if (rowW[indexY] - rowLastW[indexY] < itemCell) {
+      if (rowW[indexY] - rowLastW[indexY] < itemCellHeight) {
         // 判断当前点是否符合长度
-        int length = size.height ~/ itemCell;
+        int length = size.height ~/ itemCellHeight;
         if (rowW.length - indexY >= length) {
           insertIndex = indexY;
           for (var indexX = 0; indexX < length; indexX++) {
-            if (rowW[indexY + indexX] - rowLastW[indexY + indexX] < itemCell) {
+            if (rowW[indexY + indexX] - rowLastW[indexY + indexX] < itemCellHeight) {
             } else if (maxWidth - rowW[indexY + indexX] < size.width) {
               insertIndex = -1;
               break;
@@ -799,11 +812,11 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       // print("$indexX: $maxHeight - ${columnH[indexX]} >= ${size.height}");
       if (maxWidth - rowW[indexY] >= size.width) {
         // 判断当前点是否符合长度
-        int length = size.height ~/ itemCell;
+        int length = size.height ~/ itemCellHeight;
         if (rowW.length - indexY >= length) {
           insertIndex = indexY;
           for (var indexX = 0; indexX < length; indexX++) {
-            if (rowW[indexY + indexX] - rowLastW[indexY + indexX] < itemCell) {
+            if (rowW[indexY + indexX] - rowLastW[indexY + indexX] < itemCellHeight) {
             } else if (maxWidth - rowW[indexY + indexX] < size.width) {
               insertIndex = -1;
               break;
@@ -864,23 +877,23 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       Size itemSize = layoutChild(
           itemAll[i].id,
           BoxConstraints(
-              minWidth: itemCell * (itemAll[i].crossAxisCellCount!) +
+              minWidth: itemCellWidth * (itemAll[i].crossAxisCellCount!) +
                   ((itemAll[i].crossAxisCellCount!) - 1) * spacing,
-              maxWidth: itemCell * (itemAll[i].crossAxisCellCount!) +
+              maxWidth: itemCellWidth * (itemAll[i].crossAxisCellCount!) +
                   ((itemAll[i].crossAxisCellCount!) - 1) * spacing,
-              minHeight: itemCell * (itemAll[i].mainAxisCellCount!) +
+              minHeight: itemCellHeight * (itemAll[i].mainAxisCellCount!) +
                   ((itemAll[i].mainAxisCellCount!) - 1) * spacing,
-              maxHeight: itemCell * (itemAll[i].mainAxisCellCount!) +
+              maxHeight: itemCellHeight * (itemAll[i].mainAxisCellCount!) +
                   ((itemAll[i].mainAxisCellCount!) - 1) * spacing));
 
       // 当前widget竖排布后越界处理
       if (true) {
-        int insertIndex = checkNowColumn(itemSize, itemCell, rowW, rowLastW);
+        int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
           offsetY = 0;
           nowColumIndex = 0;
         } else {
-          offsetY = insertIndex * itemCell +
+          offsetY = insertIndex * itemCellHeight +
               (insertIndex >= 1 ? insertIndex : 0) * spacing;
           nowColumIndex = insertIndex;
         }
@@ -891,7 +904,7 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
 
       // 修改y轴偏移量
       offsetY += spacing +
-          itemCell * (itemAll[i].crossAxisCellCount ?? 1) +
+          itemCellHeight * (itemAll[i].crossAxisCellCount ?? 1) +
           ((itemAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
 
       // 放置后修改当前行的index指向
@@ -970,23 +983,23 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
     for (int i = 0; i < itemChangeAll.length; i++) {
       // 获取当前widget宽高限制
       Size itemSize = getSize(BoxConstraints(
-          minWidth: itemCell * (itemChangeAll[i].crossAxisCellCount!) +
+          minWidth: itemCellWidth * (itemChangeAll[i].crossAxisCellCount!) +
               ((itemChangeAll[i].crossAxisCellCount!) - 1) * spacing,
-          maxWidth: itemCell * (itemChangeAll[i].crossAxisCellCount!) +
+          maxWidth: itemCellWidth * (itemChangeAll[i].crossAxisCellCount!) +
               ((itemChangeAll[i].crossAxisCellCount!) - 1) * spacing,
-          minHeight: itemCell * (itemChangeAll[i].mainAxisCellCount!) +
+          minHeight: itemCellHeight * (itemChangeAll[i].mainAxisCellCount!) +
               ((itemChangeAll[i].mainAxisCellCount!) - 1) * spacing,
-          maxHeight: itemCell * (itemChangeAll[i].mainAxisCellCount!) +
+          maxHeight: itemCellHeight * (itemChangeAll[i].mainAxisCellCount!) +
               ((itemChangeAll[i].mainAxisCellCount!) - 1) * spacing));
 
       // 当前widget竖排布后越界处理
       if (true) {
-        int insertIndex = checkNowColumn(itemSize, itemCell, rowW, rowLastW);
+        int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
           offsetY = 0;
           nowColumIndex = 0;
         } else {
-          offsetY = insertIndex * itemCell +
+          offsetY = insertIndex * itemCellHeight +
               (insertIndex >= 1 ? insertIndex : 0) * spacing;
           nowColumIndex = insertIndex;
         }
@@ -997,7 +1010,7 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
 
       // 修改y轴偏移量
       offsetY += spacing +
-          itemCell * (itemChangeAll[i].crossAxisCellCount ?? 1) +
+          itemCellHeight * (itemChangeAll[i].crossAxisCellCount ?? 1) +
           ((itemChangeAll[i].crossAxisCellCount ?? 1) - 1) * spacing;
 
       // 放置后修改当前行的index指向

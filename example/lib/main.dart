@@ -22,13 +22,17 @@ class MyAPP extends StatelessWidget {
         mainAxisCellCount: mainList[i],
         child: Container(
             decoration: BoxDecoration(
-            color: Colors.primaries[i % Colors.primaries.length],
+              color: Colors.primaries[i % Colors.primaries.length],
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Center(child: Text('$i'))),
       ));
     }
-    return StaggeredReorderableView.customer(children: children, columnNum: 4);
+    return StaggeredReorderableView.customer(
+      children: children,
+      columnNum: 4,
+      fixedCellHeight: 80,
+    );
   }
 
   @override

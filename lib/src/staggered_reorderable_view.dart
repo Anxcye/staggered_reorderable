@@ -44,6 +44,10 @@ class StaggeredReorderableView extends StatelessWidget {
   /// 每次自动滚动长度，默认10.0
   final double scrollStep;
 
+  /// 固定的单元格高度（仅对垂直滚动生效）
+  /// 如果设置此值，单元格将不再是正方形，而是固定高度，宽度根据列数自适应
+  final double? fixedCellHeight;
+
   /// 每次交换完会调用此方法，获取排序后的trackingNumber列表
   final Function(List<int>)? onReorder;
 
@@ -67,6 +71,8 @@ class StaggeredReorderableView extends StatelessWidget {
   ///
   /// [scrollStep] : 每次自动滚动长度.
   ///
+  /// [fixedCellHeight] : 固定的单元格高度（仅对垂直滚动生效），设置后单元格不再是正方形.
+  ///
   const StaggeredReorderableView.customer(
       {Key? key,
       required List<ReorderableItem> children,
@@ -80,6 +86,7 @@ class StaggeredReorderableView extends StatelessWidget {
       double forwardRedundancy = 40.0,
       double backwardRedundancy = 40.0,
       double scrollStep = 10.0,
+      double? fixedCellHeight,
       Function(List<int>)? onReorder})
       : this(
             key: key,
@@ -94,6 +101,7 @@ class StaggeredReorderableView extends StatelessWidget {
             forwardRedundancy: forwardRedundancy,
             backwardRedundancy: backwardRedundancy,
             scrollStep: scrollStep,
+            fixedCellHeight: fixedCellHeight,
             onReorder: onReorder);
 
   const StaggeredReorderableView({
@@ -109,6 +117,7 @@ class StaggeredReorderableView extends StatelessWidget {
     required this.forwardRedundancy,
     required this.backwardRedundancy,
     required this.scrollStep,
+    this.fixedCellHeight,
     this.onReorder,
   }) : super(key: key);
 
@@ -126,6 +135,7 @@ class StaggeredReorderableView extends StatelessWidget {
         scrollStep,
         collation: collation,
         scrollDirection: scrollDirection,
+        fixedCellHeight: fixedCellHeight,
         onReorder: onReorder);
   }
 }
