@@ -370,58 +370,63 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
 
   @override
   Widget build(BuildContext context) {
-    if (widget.scrollDirection == Axis.vertical) {
-      _maxScrollWidth = MediaQuery.of(context).size.width;
-      var width = MediaQuery.of(context).size.width;
-      itemCell =
-          (width - (widget.columnNum + 1) * widget.spacing) / widget.columnNum;
-    } else {
-      _maxScrollHeight = MediaQuery.of(context).size.height;
-      itemCell = (_maxScrollHeight - (widget.columnNum + 1) * widget.spacing) /
-          widget.columnNum;
-    }
-    return SingleChildScrollView(
-      key: _globalKey,
-      scrollDirection: widget.scrollDirection,
-      controller: _scrollController,
-      child: SizedBox(
-        height: _maxScrollHeight,
-        width: _maxScrollWidth,
-        child: CustomMultiChildLayout(
-          delegate: widget.scrollDirection == Axis.vertical
-              ? ProxyVerticalClass(
-                  itemAll,
-                  itemChangeAll,
-                  process,
-                  widget.columnNum,
-                  widget.spacing,
-                  itemCell, callback: (value) {
-                  if (value == _maxScrollHeight) return;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (widget.scrollDirection == Axis.vertical) {
+          _maxScrollWidth = constraints.maxWidth;
+          var width = constraints.maxWidth;
+          itemCell = (width - (widget.columnNum + 1) * widget.spacing) /
+              widget.columnNum;
+        } else {
+          _maxScrollHeight = constraints.maxHeight;
+          itemCell =
+              (_maxScrollHeight - (widget.columnNum + 1) * widget.spacing) /
+                  widget.columnNum;
+        }
+        return SingleChildScrollView(
+          key: _globalKey,
+          scrollDirection: widget.scrollDirection,
+          controller: _scrollController,
+          child: SizedBox(
+            height: _maxScrollHeight,
+            width: _maxScrollWidth,
+            child: CustomMultiChildLayout(
+              delegate: widget.scrollDirection == Axis.vertical
+                  ? ProxyVerticalClass(
+                      itemAll,
+                      itemChangeAll,
+                      process,
+                      widget.columnNum,
+                      widget.spacing,
+                      itemCell, callback: (value) {
+                      if (value == _maxScrollHeight) return;
 
-                  /// 需要强行刷新一下，防止滑动区域有问题
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    setState(() {
-                      _maxScrollHeight = value;
-                    });
-                  });
-                })
-              : ProxyHorizontalClass(
-                  itemAll,
-                  itemChangeAll,
-                  process,
-                  widget.columnNum,
-                  widget.spacing,
-                  itemCell, callback: (value) {
-                  /// 需要强行刷新一下，防止滑动区域有问题
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    setState(() {
-                      _maxScrollWidth = value;
-                    });
-                  });
-                }),
-          children: generateList(),
-        ),
-      ),
+                      /// 需要强行刷新一下，防止滑动区域有问题
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          _maxScrollHeight = value;
+                        });
+                      });
+                    })
+                  : ProxyHorizontalClass(
+                      itemAll,
+                      itemChangeAll,
+                      process,
+                      widget.columnNum,
+                      widget.spacing,
+                      itemCell, callback: (value) {
+                      /// 需要强行刷新一下，防止滑动区域有问题
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          _maxScrollWidth = value;
+                        });
+                      });
+                    }),
+              children: generateList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }

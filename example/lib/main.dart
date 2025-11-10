@@ -20,7 +20,12 @@ class MyAPP extends StatelessWidget {
         id: '$i',
         crossAxisCellCount: crossList[i],
         mainAxisCellCount: mainList[i],
-        child: Center(child: Text('$i')),
+        child: Container(
+            decoration: BoxDecoration(
+            color: Colors.primaries[i % Colors.primaries.length],
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Center(child: Text('$i'))),
       ));
     }
     return StaggeredReorderableView.customer(children: children, columnNum: 4);
@@ -33,10 +38,13 @@ class MyAPP extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Example'),
         ),
-        body: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: _body(),
+        body: Padding(
+          padding: const EdgeInsets.only(left: 20.0),
+          child: SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: _body(),
+          ),
         ),
       ),
     );
