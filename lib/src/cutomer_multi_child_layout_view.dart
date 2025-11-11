@@ -386,14 +386,14 @@ class _CustomerMultiChildViewState extends State<CustomerMultiChildView>
         if (widget.scrollDirection == Axis.vertical) {
           _maxScrollWidth = constraints.maxWidth;
           var width = constraints.maxWidth;
-          itemCellWidth = (width - (widget.columnNum + 1) * widget.spacing) /
+          itemCellWidth = (width - (widget.columnNum - 1) * widget.spacing) /
               widget.columnNum;
           // 如果设置了固定高度，使用固定高度，否则使用宽度（正方形）
           itemCellHeight = widget.fixedCellHeight ?? itemCellWidth;
         } else {
           _maxScrollHeight = constraints.maxHeight;
           itemCellHeight =
-              (_maxScrollHeight - (widget.columnNum + 1) * widget.spacing) /
+              (_maxScrollHeight - (widget.columnNum - 1) * widget.spacing) /
                   widget.columnNum;
           // 水平滚动时保持正方形
           itemCellWidth = itemCellHeight;
@@ -573,16 +573,16 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowRow(itemSize, columnH, columnLastH);
         if (insertIndex == -1) {
-          offsetX = spacing;
+          offsetX = 0;
           nowRowIndex = 0;
         } else {
-          offsetX = spacing + insertIndex * (itemCellWidth + spacing);
+          offsetX = insertIndex * (itemCellWidth + spacing);
           nowRowIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemAll[i].id,
-          Offset(offsetX, columnH[nowRowIndex] + spacing)));
+          Offset(offsetX, columnH[nowRowIndex])));
 
       // 修改x轴偏移量
       offsetX += itemCellWidth * (itemAll[i].crossAxisCellCount ?? 1) +
@@ -709,16 +709,16 @@ class ProxyVerticalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowRow(itemSize, columnH, columnLastH);
         if (insertIndex == -1) {
-          offsetX = spacing;
+          offsetX = 0;
           nowRowIndex = 0;
         } else {
-          offsetX = spacing + insertIndex * (itemCellWidth + spacing);
+          offsetX = insertIndex * (itemCellWidth + spacing);
           nowRowIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemChangeAll[i].id,
-          Offset(offsetX, columnH[nowRowIndex] + spacing)));
+          Offset(offsetX, columnH[nowRowIndex])));
 
       // 修改x轴偏移量
       offsetX += itemCellWidth * (itemChangeAll[i].crossAxisCellCount ?? 1) +
@@ -894,16 +894,16 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
-          offsetY = spacing;
+          offsetY = 0;
           nowColumIndex = 0;
         } else {
-          offsetY = spacing + insertIndex * (itemCellHeight + spacing);
+          offsetY = insertIndex * (itemCellHeight + spacing);
           nowColumIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(
-          itemAll[i].id, Offset(rowW[nowColumIndex] + spacing, offsetY)));
+          itemAll[i].id, Offset(rowW[nowColumIndex], offsetY)));
 
       // 修改y轴偏移量
       offsetY += itemCellHeight * (itemAll[i].crossAxisCellCount ?? 1) +
@@ -999,16 +999,16 @@ class ProxyHorizontalClass extends MultiChildLayoutDelegate {
       if (true) {
         int insertIndex = checkNowColumn(itemSize, rowW, rowLastW);
         if (insertIndex == -1) {
-          offsetY = spacing;
+          offsetY = 0;
           nowColumIndex = 0;
         } else {
-          offsetY = spacing + insertIndex * (itemCellHeight + spacing);
+          offsetY = insertIndex * (itemCellHeight + spacing);
           nowColumIndex = insertIndex;
         }
       }
 
       calculateItemPosition.add(ItemPosition(itemChangeAll[i].id,
-          Offset(rowW[nowColumIndex] + spacing, offsetY)));
+          Offset(rowW[nowColumIndex], offsetY)));
 
       // 修改y轴偏移量
       offsetY += itemCellHeight * (itemChangeAll[i].crossAxisCellCount ?? 1) +
